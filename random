@@ -1,0 +1,52 @@
+import random
+import string
+
+def generate_random_string(length):
+    return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+
+def fitness(target, candidate):
+    return sum(1 for a, b in zip(target, candidate) if a == b)
+
+def crossover(parent1, parent2):
+    index = random.randint(0, len(parent1) - 1)
+    child = parent1[:index] + parent2[index:]
+    return child
+
+def mutate(child, mutation_rate):
+    mutated_child = ''.join(
+        char if random.uniform(0, 1) > mutation_rate else random.choice(string.ascii_letters)
+        for char in child
+    )
+    return mutated_child
+
+def genetic_algorithm(target, population_size, mutation_rate, generations):
+    population = [generate_random_string(len(target)) for _ in range(population_size)]
+
+    for generation in range(generations):
+        scores = [(individual, fitness(target, individual)) for individual in population]
+        scores.sort(key=lambda x: x[1], reverse=True)
+
+        if generation % 10 == 0:
+            print(f"Generation {generation}: {scores[0]}")
+
+        if scores[0][1] == len(target):
+            print(f"Target '{target}' reached in generation {generation}")
+            break
+
+        next_generation = [scores[0][0]]
+
+        for _ in range(1, population_size):
+            parent1, parent2 = random.choices(population[:10], k=2)
+            child = crossover(parent1, parent2)
+            child = mutate(child, mutation_rate)
+            next_generation.append(child)
+
+        population = next_generation
+
+if __name__ == "__main__":
+    target_string = "Hello, World!"
+    population_size = 100
+    mutation_rate = 0.01
+    generations = 1000
+
+    genetic_algorithm(target_string, population_size, mutation_rate, generations)
